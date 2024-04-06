@@ -1,7 +1,8 @@
 #pragma once
 
-#include "ap_fixed.h"
+// #include "ap_fixed.h"
 #include <complex>
+#include <fstream>
 /* ================================================================= */
 /* DEFINES */
 /* ================================================================= */
@@ -11,9 +12,8 @@
 #define PARAMS_SIZE 3
 #define TRANSFER_FUNC_SIZE 1024
 
-#define TEST_DIR                                                               \
-    "D:/Magistras/Magistro "                                                   \
-    "projektas/Matlab_realization/Raw/test/TransferFunction/"
+#define LOG_FILE "../log.txt"
+#define TEST_DIR "../test/TransferFunction/"
 #define ARGS_DIR TEST_DIR "OriginalArgs.txt"
 #define PARAMS_DIR TEST_DIR "acquisition_parameters.txt"
 #define FREQ_AXIS_DIR TEST_DIR "freq_axis.txt"
@@ -28,6 +28,10 @@
 /* ================================================================= */
 
 #ifdef DEBUG
+#define START_LOG \
+    remove(LOG_FILE); \
+    freopen(LOG_FILE, "a", stdout);
+
 #define PRINT(variable, i) printf(#variable "[%d]: %f\n", i, (double)variable);
 #define PRINT_C(variable, i)                                                   \
     printf(#variable "[%d]: %f, %f i\n", i, (double)variable.real(),           \
@@ -51,10 +55,10 @@
 /* ================================================================= */
 /* TYPEDEFS */
 /* ================================================================= */
-typedef ap_fixed<32, 16> ap_fixed_32p16; // ap_fixed_32p16
-typedef ap_fixed<48, 32> ap_fixed_48p32; // ap_fixed_48p32
-typedef ap_fixed<64, 48> ap_fixed_64p48; // ap_fixed_64p48
-typedef ap_fixed<64, 32> ap_fixed_64p32; // ap_fixed_64p32
+typedef float ap_fixed_32p16; // ap_fixed_32p16
+typedef float ap_fixed_48p32; // ap_fixed_48p32
+typedef double ap_fixed_64p48; // ap_fixed_64p48
+typedef double ap_fixed_64p32; // ap_fixed_64p32
 
 typedef std::complex<ap_fixed_32p16> ap_complex_32p16; // ap_complex_32p16
 typedef std::complex<ap_fixed_48p32> ap_complex_48p32; // ap_complex_48p32
@@ -75,3 +79,5 @@ struct sModelParams {
     ap_fixed_32p16 c1;     /* Speed of sound in the first medium */
     ap_fixed_32p16 ro1;    /* Density of the first medium */
 };
+
+#

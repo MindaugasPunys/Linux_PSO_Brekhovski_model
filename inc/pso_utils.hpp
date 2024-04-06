@@ -3,12 +3,14 @@
 #include "common_defs.hpp"
 
 struct sArgConst_t {
-    ap_fixed_64p32 max;
+    uint64_t max;
     uint64_t max_mask; // Mask for PRNG
     ap_fixed_32p16 inertia;
     ap_fixed_32p16 personal_weight;
     ap_fixed_32p16 global_weight;
 };
+
+#ifdef __FPGA__
 
 /* PRNG */
 /* Xorshift16 */
@@ -57,6 +59,8 @@ ap_fixed_64p32 PRNG_64p32(const uint64_t &max_mask) {
     randomFloat.range(63, 0) = (xorshift64() & max_mask);
     return randomFloat;
 }
+
+#endif
 
 void pso_util_print(const char *text, int i, ap_fixed_64p32 *args) {
     printf("%s[%-4d]: alfa0=%-10f; freq0=%-10f; c2=%-10f; n=%-10f; ro2=%-10f; h=%-10f;\n", text, i,
