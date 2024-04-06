@@ -74,7 +74,7 @@ static void pso_swarm_init(sParticle_t swarm[PSO_SWARM_SIZE],
     /* Initiate swarm values */
     for (int i = 0; i < PSO_SWARM_SIZE; i++) {
         for (int j = 0; j < PSO_DIMENSION; j++) {
-            swarm[i].position[j] = PRNG_64p32(args_const_lut[j].max_mask);
+            swarm[i].position[j] = rand() % args_const_lut[j].max;
             swarm[i].position_best[j] = swarm[i].position[j];
             swarm[i].velocity[j] = 0;
         }
@@ -91,8 +91,8 @@ static void pso_update_velocity(sParticle_t &swarm, sParticle_t &global_best) {
     ap_fixed_64p32 vel_interia, vel_personal, vel_global;
     for (int j = 0; j < PSO_DIMENSION; j++) {
 #pragma HLS pipeline
-        rand_val_1 = PRNG_64p32(DECIMAL_PART_64P32);
-        rand_val_2 = PRNG_64p32(DECIMAL_PART_64P32);
+        rand_val_1 = (ap_fixed_64p32)rand() / RAND_MAX;
+        rand_val_2 = (ap_fixed_64p32)rand() / RAND_MAX;
         // printf("rand_val[%d]: %f, rand_val[%d]: %f\n", 2 * j,
         // (double)rand_val[2 * j], 2 * j + 1, (double)rand_val[2 * j + 1]);
         vel_interia = args_const_lut[j].inertia * swarm.velocity[j];

@@ -93,8 +93,9 @@ void test_pso_process(void) {
 }
 
 int main() {
-    // test_TransferFunction();
-    // test_WaveSynthesis();
-    test_pso_process();
+    START_LOG
+    test_TransferFunction();
+    test_WaveSynthesis();
+    // test_pso_process();
     return 0;
 }

@@ -1,10 +1,7 @@
 #include "model.hpp"
-#include "hls_math.h"
 #include <stdio.h>
 #include "fft_wrapper.hpp"
 
-#define DECIMATION_SHIFT 30
-// static const ap_fixed_64p32 PI = 3.14159265358979323846;
 static const ap_fixed_32p16 PI_x_2 = 6.28318530717958647692;
 
 void TransferFunction(const sModelArgs args, const sModelParams params,
@@ -22,11 +19,11 @@ void TransferFunction(const sModelArgs args, const sModelParams params,
 
     ap_fixed_32p16 Z1 = params.c1 * params.ro1;
     // PRINT(Z1, 0);
-    ap_fixed_32p16 Z1_dec = Z1 >> DECIMATION_SHIFT;
+    ap_fixed_32p16 Z1_dec = Z1;
     // PRINT(Z1_dec, 0);
     ap_fixed_64p32 Z2 = args.c2 * args.ro2;
     // PRINT(Z2, 0);
-    ap_fixed_32p16 Z2_dec = Z2 >> DECIMATION_SHIFT;
+    ap_fixed_32p16 Z2_dec = Z2;
     // PRINT(Z2_dec, 0);
 
     ap_fixed_64p32 numerator = Z1 * Z2_dec; // DECIMATED!
@@ -52,9 +49,9 @@ void TransferFunction(const sModelArgs args, const sModelParams params,
     tf_out[0] = 0;
     for (int i = 1; i < TRANSFER_FUNC_SIZE; i++) {
         /* Calculate alfa - attenuation coefficient */
-        alf_1 = hls::abs(freq_axis[i]) / args.freq0;
+        alf_1 = abs(freq_axis[i]) / args.freq0;
         // PRINT(alf_1, i);
-        alf_2 = hls::pow((float)alf_1, (float)args.n);
+        alf_2 = pow((float)alf_1, (float)args.n);
         // alf_2 = alf_1 ^ args.n;
         // PRINT(alf_2, i);
         alf = args.alfa0 * alf_2;
@@ -80,14 +77,14 @@ void TransferFunction(const sModelArgs args, const sModelParams params,
         // PRINT(imag_kh, i);
 
         /* Apply Euler's Cosine Identity replacement */
-        cos_kh_real = hls::cos(real_kh) * hls::cosh(imag_kh);
-        cos_kh_imag = -1 * hls::sin(real_kh) * hls::sinh(imag_kh);
+        cos_kh_real = cos(real_kh) * cosh(imag_kh);
+        cos_kh_imag = -1 * sin(real_kh) * sinh(imag_kh);
         cos_kh = ap_complex_32p16(cos_kh_real, cos_kh_imag);
         // PRINT_C(cos_kh, i);
 
         /* Apply Euler's Sine Identity replacement */
-        sin_kh_real = hls::sin(real_kh) * hls::cosh(imag_kh);
-        sin_kh_imag = hls::cos(real_kh) * hls::sinh(imag_kh);
+        sin_kh_real = sin(real_kh) * cosh(imag_kh);
+        sin_kh_imag = cos(real_kh) * sinh(imag_kh);
         sin_kh = ap_complex_32p16(sin_kh_real, sin_kh_imag);
         // PRINT_C(sin_kh, i);
 
@@ -128,8 +125,8 @@ void WaveSynthesis(const sModelArgs args, const sModelParams params,
         // PRINT_C(T_conj, i);
         exp_arg = PI_x_2 * (ap_fixed_32p16)(freq_axis[i] * args.h) / params.c1;
         // PRINT(exp_arg, i);
-        exp_sub_real = hls::cos(exp_arg);
-        exp_sub_imag = hls::sin(exp_arg);
+        exp_sub_real = cos(exp_arg);
+        exp_sub_imag = sin(exp_arg);
         exp_sub = ap_complex_32p16(exp_sub_real, exp_sub_imag);
         // PRINT_C(exp_sub, i);
         response_spectrum[i] = input_fft[i] * T_conj * exp_sub;
