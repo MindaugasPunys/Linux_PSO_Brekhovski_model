@@ -2,6 +2,9 @@
 #include "pso_utils.hpp"
 #include "model.hpp"
 
+/* ================================================================= */
+/* DEFINES */
+/* ================================================================= */
 #define PSO_DIMENSION ARGS_SIZE
 #define DECIMAL_PART_64P32 0xFFFFFFFF
 #define WHOLE_PART_64P32(x) (((x) << 32) | DECIMAL_PART_64P32)
@@ -16,8 +19,15 @@ struct sParticle_t {
     ap_fixed_64p32 fitness_best;
 };
 
+/* ================================================================= */
 /* Constants */
+/* ================================================================= */
 static const ap_fixed_32p16 PI_x_2 = 6.28318530717958647692;
+
+/* ================================================================= */
+/* Global variables */
+/* ================================================================= */
+
 
 /* max_mask = INT part + FFFFFFFF float part */
 static const sArgConst_t args_const_lut[ARGS_SIZE] = {
@@ -30,6 +40,10 @@ static const sArgConst_t args_const_lut[ARGS_SIZE] = {
     {2000,         0x7FFFFFFFFFF,   0.1,      1,      1}, /*  ro2     */
     {1,               0xFFFFFFFF,   0.1,      1,      1}  /*  h       */
 };
+
+/* ================================================================= */
+/* PRIVATE FUNCTIONS */
+/* ================================================================= */
 
 ap_fixed_64p32 pso_fitness(const ap_fixed_64p32 args[ARGS_SIZE],
                            const sModelParams &params,
@@ -56,11 +70,11 @@ ap_fixed_64p32 pso_fitness(const ap_fixed_64p32 args[ARGS_SIZE],
         denominator += meas_signal[i] * meas_signal[i];
         // printf(" %-10f += %-10f ^ 2\n", (double)denominator, (double)ref_signal[i]);
     }
+
     if (denominator == 0) {
         fitness = 999999;
     } else {
         fitness = numerator / denominator;
-        // printf(" %-10f / %-10f = %-10f\n", (double)numerator, (double)denominator, (double)fitness);
     }
     return fitness;
 }
@@ -161,7 +175,6 @@ static void pso_find_global_best(sParticle_t swarm[PSO_SWARM_SIZE],
                                  sParticle_t &global_best) {
     for (int i = 0; i < PSO_SWARM_SIZE; i++) {
         if (swarm[i].fitness_best < global_best.fitness_best) {
-            // pso_util_print("global_best", i, swarm[i].position_best);
             global_best.fitness_best = swarm[i].fitness_best;
             pso_copy_position(swarm[i].position, global_best.position);
             pso_copy_position(swarm[i].position_best,
@@ -170,7 +183,10 @@ static void pso_find_global_best(sParticle_t swarm[PSO_SWARM_SIZE],
     }
 }
 
-void pso_process(ap_fixed_64p32 args_estimate[PARAMS_SIZE],
+/* ================================================================= */
+/* PUBLIC FUNCTIONS */
+/* ================================================================= */
+void pso_process(ap_fixed_64p32 args_estimate[ARGS_SIZE],
                  const sModelParams &params,
                  const ap_fixed_32p16 meas_signal[TRANSFER_FUNC_SIZE],
                  const ap_fixed_32p16 ref_signal[TRANSFER_FUNC_SIZE],
@@ -178,13 +194,13 @@ void pso_process(ap_fixed_64p32 args_estimate[PARAMS_SIZE],
                  const uint16_t itterations) {
 
     sParticle_t swarm[PSO_SWARM_SIZE];
-#pragma HLS array_partition variable = swarm->position complete
-#pragma HLS array_partition variable = swarm->position_best complete
-#pragma HLS array_partition variable = swarm->velocity complete
+// #pragma HLS array_partition variable = swarm->position complete
+// #pragma HLS array_partition variable = swarm->position_best complete
+// #pragma HLS array_partition variable = swarm->velocity complete
 
     sParticle_t global_best;
-#pragma HLS array_partition variable = global_best.position complete
-#pragma HLS array_partition variable = global_best.position_best complete
+// #pragma HLS array_partition variable = global_best.position complete
+// #pragma HLS array_partition variable = global_best.position_best complete
 
     pso_swarm_init(swarm, params, meas_signal, ref_signal, freq_axis);
     global_best = swarm[0];

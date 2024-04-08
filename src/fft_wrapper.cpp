@@ -1,5 +1,6 @@
 #include "fft_wrapper.hpp"
 #include <fftw3.h>
+#include <cstring>
 /* ================================================================= */
 /* PRIVATE FUNCTIONS */
 /* ================================================================= */
@@ -12,11 +13,12 @@ static fftwf_plan inverse_plan;
 /* PUBLIC FUNCTIONS */
 /* ================================================================= */
 
+static fftwf_complex in_fftw[FFT_LENGTH];
+static fftwf_complex out_fftw[FFT_LENGTH];
+
 void FFT_call(fft_input_t in[FFT_LENGTH], fft_output_t out[FFT_LENGTH]) {
-    fftwf_complex *in_fftw =
-        (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * FFT_LENGTH);
-    fftwf_complex *out_fftw =
-        (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * FFT_LENGTH);
+    memset(in_fftw, 0, sizeof(fftwf_complex) * FFT_LENGTH);
+    memset(out_fftw, 0, sizeof(fftwf_complex) * FFT_LENGTH);
 
     for (int i = 0; i < FFT_LENGTH; i++) {
         in_fftw[i][0] = in[i];
@@ -33,15 +35,10 @@ void FFT_call(fft_input_t in[FFT_LENGTH], fft_output_t out[FFT_LENGTH]) {
     for (int i = 0; i < FFT_LENGTH; i++) {
         out[i] = fft_output_t(out_fftw[i][0], out_fftw[i][1]);
     }
-
-    fftwf_free(in_fftw);
-    fftwf_free(out_fftw);
 }
 void IFFT_call(fft_output_t in[FFT_LENGTH], fft_input_t out[FFT_LENGTH]) {
-    fftwf_complex *in_fftw =
-        (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * FFT_LENGTH);
-    fftwf_complex *out_fftw =
-        (fftwf_complex *)fftwf_malloc(sizeof(fftwf_complex) * FFT_LENGTH);
+    memset(in_fftw, 0, sizeof(fftwf_complex) * FFT_LENGTH);
+    memset(out_fftw, 0, sizeof(fftwf_complex) * FFT_LENGTH);
 
     for (int i = 0; i < FFT_LENGTH; i++) {
         in_fftw[i][0] = in[i].real();
@@ -58,9 +55,6 @@ void IFFT_call(fft_output_t in[FFT_LENGTH], fft_input_t out[FFT_LENGTH]) {
     for (int i = 0; i < FFT_LENGTH; i++) {
         out[i] = out_fftw[i][0] / FFT_LENGTH;
     }
-
-    fftwf_free(in_fftw);
-    fftwf_free(out_fftw);
 }
 
 /* Function to wrap actual FFT call */

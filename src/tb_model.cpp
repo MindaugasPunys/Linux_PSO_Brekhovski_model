@@ -26,6 +26,8 @@ void test_TransferFunction(void) {
     /* Call the model */
     ap_complex_32p16 tf_result[TRANSFER_FUNC_SIZE];
     TransferFunction(args, params, in_freq_axis, tf_result);
+    TransferFunction(args, params, in_freq_axis, tf_result);
+    TransferFunction(args, params, in_freq_axis, tf_result);
 
     for (int i = 0; i < TRANSFER_FUNC_SIZE; i++) {
         ap_complex_64p32 T = tf_result[i];
@@ -57,6 +59,8 @@ void test_WaveSynthesis(void) {
 
     /* Call the model */
     ap_fixed_32p16 wave_result[TRANSFER_FUNC_SIZE];
+    WaveSynthesis(args, params, in_refrence, in_freq_axis, wave_result);
+    WaveSynthesis(args, params, in_refrence, in_freq_axis, wave_result);
     WaveSynthesis(args, params, in_refrence, in_freq_axis, wave_result);
 
     for (int i = 0; i < TRANSFER_FUNC_SIZE; i++) {
@@ -94,8 +98,8 @@ void test_pso_process(void) {
 
 int main() {
     START_LOG
-    test_TransferFunction();
-    test_WaveSynthesis();
-    // test_pso_process();
+    // test_TransferFunction();
+    // test_WaveSynthesis();
+    test_pso_process();
     return 0;
 }

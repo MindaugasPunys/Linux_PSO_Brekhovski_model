@@ -79,5 +79,3 @@ struct sModelParams {
     ap_fixed_32p16 c1;     /* Speed of sound in the first medium */
     ap_fixed_32p16 ro1;    /* Density of the first medium */
 };
-
-#

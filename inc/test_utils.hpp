@@ -8,13 +8,9 @@
 
 class test_utils {
   private:
-    std::string dir;
     void print_name(const char *name);
 
   public:
-    test_utils() = default;
-    ~test_utils() = default;
-
     void file_read_float(const char *filename, float *data, int size);
     void file_read_float(const char *filename, ap_fixed_64p32 *data, int size);
     void file_read_complex(const char *filename_re, const char *filename_im,
