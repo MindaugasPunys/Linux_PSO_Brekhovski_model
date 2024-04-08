@@ -9,6 +9,10 @@ file(GLOB SOURCES "src/*.cpp")
 
 add_executable(PSO_MODEL ${SOURCES})
 
+# Include the FFTW library
+include_directories("/usr/include")
+target_link_libraries(PSO_MODEL "/usr/lib/x86_64-linux-gnu/libfftw3f.so")
+
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
 include(CPack)
