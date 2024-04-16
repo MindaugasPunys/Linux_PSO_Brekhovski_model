@@ -7,7 +7,7 @@ make
 ./PSO_MODEL
 
 # run gprof to profile the code
-gprof --inlines ./PSO_MODEL gmon.out > profile_report.txt
+gprof ./PSO_MODEL gmon.out > profile_report.txt
 echo "Profiling report generated: profile_report.txt"
 
 # Profile instructions with valgrind

@@ -20,6 +20,7 @@ struct sParticle_t {
 /* ================================================================= */
 /* Global variables */
 /* ================================================================= */
+static bool first_run = true;
 static sParticle_t swarm[PSO_SWARM_SIZE];
 static sParticle_t global_best;
 static sModelParams params;
@@ -53,7 +54,7 @@ ap_fixed_64p32 pso_fitness(const ap_fixed_64p32 args[ARGS_SIZE],
     /* Add your code here */
     ap_fixed_64p32 fitness = 0;
     /* TEST */
-//     fitness = args[0] + args[1] + args[2] + args[3] + args[4] + args[5];
+    // fitness = args[0] + args[1] + args[2] + args[3] + args[4] + args[5];
 
     /* Call the model */
     sModelArgs model_args = {args[0], args[1], args[2], args[3], args[4], args[5]};
@@ -65,40 +66,37 @@ ap_fixed_64p32 pso_fitness(const ap_fixed_64p32 args[ARGS_SIZE],
     ap_fixed_64p32 numerator = 0;
     ap_fixed_64p32 denominator = 0;
     for (int i = 0; i < TRANSFER_FUNC_SIZE; i++) {
+#pragma HLS pipeline
         diff = wave_result[i] - meas_signal[i];
         numerator += diff * diff;
         denominator += meas_signal[i] * meas_signal[i];
         // printf(" %-10f += %-10f ^ 2\n", (double)denominator, (double)ref_signal[i]);
     }
-
     if (denominator == 0) {
-        fitness = 999999;
+        fitness = MAX_32;
     } else {
         fitness = numerator / denominator;
+        // printf(" %-10f / %-10f = %-10f\n", (double)numerator, (double)denominator, (double)fitness);
     }
     return fitness;
 }
 
 /* PSO Functions */
-static void pso_swarm_init(const ap_fixed_32p16 meas_signal[TRANSFER_FUNC_SIZE],
-                           const ap_fixed_32p16 ref_signal[TRANSFER_FUNC_SIZE],
-                           const ap_fixed_64p32 freq_axis[TRANSFER_FUNC_SIZE]) {
+static void pso_swarm_init(void) {
     /* Initiate swarm values */
     for (int i = 0; i < PSO_SWARM_SIZE; i++) {
+#pragma HLS pipeline
         for (int j = 0; j < PSO_DIMENSION; j++) {
 #pragma HLS pipeline
             ap_fixed_64p32 rand_val =
                 args_range[j].min +
                 PRNG_64p32() * (args_range[j].max - args_range[j].min);
             swarm[i].position[j] = rand_val;
-            swarm[i].position_best[j] = swarm[i].position[j];
+            swarm[i].position_best[j] = rand_val;
             swarm[i].velocity[j] = 0;
         }
-
-        swarm[i].fitness_current =
-            pso_fitness(swarm[i].position, meas_signal, ref_signal, freq_axis);
-        swarm[i].fitness_best = swarm[i].fitness_current;
-        pso_util_print("init", i, swarm[i].position);
+        swarm[i].fitness_current = MAX_32;
+        swarm[i].fitness_best = MAX_32;
     }
 }
 
@@ -106,7 +104,8 @@ static void pso_update_velocity(sParticle_t &swarm) {
     ap_fixed_64p32 rand_val_1, rand_val_2;
     ap_fixed_64p32 vel_interia, vel_personal, vel_global;
     for (int j = 0; j < PSO_DIMENSION; j++) {
-#pragma HLS pipeline
+// #pragma HLS pipeline
+#pragma HLS unroll
         rand_val_1 = PRNG_64p32();
         rand_val_2 = PRNG_64p32();
         vel_interia = particle_cfg[j].inertia * swarm.velocity[j];
@@ -121,7 +120,8 @@ static void pso_update_velocity(sParticle_t &swarm) {
 static void pso_update_position(sParticle_t &swarm) {
     ap_fixed_64p32 new_position;
     for (int j = 0; j < PSO_DIMENSION; j++) {
-#pragma HLS pipeline
+// #pragma HLS pipeline
+#pragma HLS unroll
         new_position = swarm.position[j] + swarm.velocity[j];
         swarm.position[j] = new_position;
     }
@@ -129,6 +129,7 @@ static void pso_update_position(sParticle_t &swarm) {
 
 static void pso_copy_position(ap_fixed_64p32 *source, ap_fixed_64p32 *dest) {
     for (int i = 0; i < PSO_DIMENSION; i++) {
+#pragma HLS unroll
         // printf(" %f --> %f\n", (double)source[i], (double)dest[i]);
         dest[i] = source[i];
     }
@@ -153,17 +154,20 @@ pso_swarm_update(const ap_fixed_32p16 meas_signal[TRANSFER_FUNC_SIZE],
                  const ap_fixed_64p32 freq_axis[TRANSFER_FUNC_SIZE]) {
     /* Update velocity and position */
     for (int i = 0; i < PSO_SWARM_SIZE; i++) {
-        pso_update_velocity(swarm[i]);
-        pso_update_position(swarm[i]);
+        if (first_run) {
+            first_run = false;
+        } else {
+            pso_update_velocity(swarm[i]);
+            pso_update_position(swarm[i]);
+        }
         pso_update_fitness(swarm[i], meas_signal, ref_signal, freq_axis);
-        // pso_util_print("swarm", i, swarm[i].position);
-        // pso_util_print("best", i, swarm[i].position_best);
     }
 }
 
 /* Find best particle in the swarm and return its fitness */
 static void pso_find_global_best(void) {
     for (int i = 0; i < PSO_SWARM_SIZE; i++) {
+#pragma HLS pipeline
         if (swarm[i].fitness_best < global_best.fitness_best) {
             // pso_util_print("global_best", i, swarm[i].position_best);
             global_best.fitness_best = swarm[i].fitness_best;
@@ -177,6 +181,7 @@ static void pso_find_global_best(void) {
 /* ================================================================= */
 /* PUBLIC FUNCTIONS */
 /* ================================================================= */
+
 void pso_process(ap_fixed_64p32 args_estimate[ARGS_SIZE],
                  const sModelParams &params_ref,
                  const ap_fixed_32p16 meas_signal[TRANSFER_FUNC_SIZE],
@@ -185,6 +190,7 @@ void pso_process(ap_fixed_64p32 args_estimate[ARGS_SIZE],
 
     /* Copy input arguments */
     params = params_ref;
+    first_run = true;
 
 /* swarm */
 #pragma HLS array_partition variable = swarm->position complete
@@ -194,11 +200,8 @@ void pso_process(ap_fixed_64p32 args_estimate[ARGS_SIZE],
 #pragma HLS array_partition variable = global_best.position complete
 #pragma HLS array_partition variable = global_best.position_best complete
 
-    pso_swarm_init(meas_signal, ref_signal, freq_axis);
+    pso_swarm_init();
     global_best = swarm[0];
-    pso_find_global_best();
-    pso_util_print("initial_best", 0, global_best.position);
-
     for (int iter = 0; iter < PSO_ITERATIONS; iter++) {
         pso_swarm_update(meas_signal, ref_signal, freq_axis);
         pso_find_global_best();

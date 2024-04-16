@@ -11,6 +11,8 @@
 #define ARGS_SIZE 6
 #define PARAMS_SIZE 3
 #define TRANSFER_FUNC_SIZE 1024
+#define MAX_16 32767
+#define MAX_32 2147483647
 
 #define LOG_FILE "../log.txt"
 #define TEST_DIR "../test/TransferFunction/"
