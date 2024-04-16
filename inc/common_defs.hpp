@@ -55,15 +55,10 @@
 /* ================================================================= */
 /* TYPEDEFS */
 /* ================================================================= */
-typedef float ap_fixed_32p16; // ap_fixed_32p16
-typedef float ap_fixed_48p32; // ap_fixed_48p32
-typedef double ap_fixed_64p48; // ap_fixed_64p48
-typedef double ap_fixed_64p32; // ap_fixed_64p32
-
-typedef std::complex<ap_fixed_32p16> ap_complex_32p16; // ap_complex_32p16
-typedef std::complex<ap_fixed_48p32> ap_complex_48p32; // ap_complex_48p32
-typedef std::complex<ap_fixed_64p48> ap_complex_64p48; // ap_complex_64p48
-typedef std::complex<ap_fixed_64p32> ap_complex_64p32; // ap_complex_64p32
+typedef float ap_fixed_32p16;
+typedef double ap_fixed_64p32;
+typedef std::complex<ap_fixed_32p16> ap_complex_32p16;
+typedef std::complex<ap_fixed_64p32> ap_complex_64p32;
 
 struct sModelArgs {
     ap_fixed_32p16 alfa0; /* Attenuation coefficient */
